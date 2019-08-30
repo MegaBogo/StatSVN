@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.maven.artifact.versioning.ComparableVersion;
+
 import net.sf.statcvs.util.LookaheadReader;
 import net.sf.statsvn.output.SvnConfigurationOptions;
 
@@ -14,12 +16,12 @@ import net.sf.statsvn.output.SvnConfigurationOptions;
  * 
  * @author Jean-Philippe Daigle <jpdaigle@softwareengineering.ca>
  * 
- * @version $Id: SvnStartupUtils.java 394 2009-08-10 20:08:46Z jkealey $
+ * @version $Id$
  */
 public class SvnStartupUtils implements ISvnVersionProcessor {
 	private static final String SVN_VERSION_COMMAND = "svn --version";
 
-	public static final String SVN_MINIMUM_VERSION = "1.3.10";
+	public static final String SVN_MINIMUM_VERSION = "1.3.0";
 
 	public static final String SVN_MINIMUM_VERSION_DIFF_PER_REV = "1.4.0";
 
@@ -60,38 +62,14 @@ public class SvnStartupUtils implements ISvnVersionProcessor {
 					final Matcher m = pRegex.matcher(line);
 					if (m.find()) {
 						final String versionString = line.substring(m.start(), m.end());
-						final String curVersion[] = versionString.split("\\.");
-						final String minVersion[] = SVN_MINIMUM_VERSION.split("\\.");
-						boolean versionSuccess = false;
-						
-						for (int i = 0; i < Math.min(minVersion.length, curVersion.length); i++) {
-							final int curVersionNum = Integer.parseInt(curVersion[i]);
-							final int minVersionNum = Integer.parseInt(minVersion[i]);
-							
-							if(curVersionNum == minVersionNum) {
-								continue;
-							} else if (curVersionNum > minVersionNum) {
-								versionSuccess = true;
-								break;
-							} else if (curVersionNum < minVersionNum) {
-								versionSuccess = false;
-								break;
-							}
-						}
-						
-						if (versionSuccess) {
-							return versionString;
-						} else {
-							throw new SvnVersionMismatchException(versionString, SVN_MINIMUM_VERSION);
-						}
-/*
-						// we perform a simple string comparison against the version numbers
-						if (versionString.compareTo(SVN_MINIMUM_VERSION) >= 0) {
+						//we perform a comparison against the version numbers using ComparableVersion
+						ComparableVersion svnVersion = new ComparableVersion(versionString);
+						ComparableVersion svnMinimumVersion = new ComparableVersion(SVN_MINIMUM_VERSION);
+						if (svnVersion.compareTo(svnMinimumVersion) >= 0) {
 							return versionString; // success
 						} else {
 							throw new SvnVersionMismatchException(versionString, SVN_MINIMUM_VERSION);
 						}
-*/
 					}
 				}
 			}
