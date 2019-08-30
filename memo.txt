@@ -1,0 +1,8 @@
+[로그파일 생성]
+svn log --xml -v 체크아웃폴더명 > 로그파일명(test.log)
+
+
+[jar파일 실행]
+java -jar statsvn.jar -charset euc-kr -title 타이틀명 -output-dir 출력폴더명 로그파일명 체크아웃폴더명
+
+
